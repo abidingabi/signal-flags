@@ -61,6 +61,12 @@ const requestListener = function (req, res) {
       return;
     }
 
+    if (input.length > 15) {
+      res.writeHead(406, { "Content-Type": "text/text"});
+      res.end("Input too long! Should be under 15 characters.");
+      return;
+    }
+
     const magickCommand = rectsWithHeightToMagickCommand(
       lib.calculateRectsAndHeight(lib.inputStringToColors(input.toLowerCase()))
     );
