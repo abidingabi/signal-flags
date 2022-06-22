@@ -1,5 +1,3 @@
-"use strict";
-
 /* just so we're clear, all flags are valid;
  * these flags are specifically valid here because
  * they have a one-to-one correspondence between a color and a descriptor of the flag,
@@ -69,7 +67,7 @@ const validFlags = [
   },
 ];
 
-const uniqueLetters = validFlags
+export const uniqueLetters = validFlags
   .map((flag) => flag.name.split(""))
   .flat()
   .filter(
@@ -78,13 +76,13 @@ const uniqueLetters = validFlags
   )
   .sort();
 
-const validationRegex =
+export const validationRegex =
   "[" +
   uniqueLetters.join("") +
   uniqueLetters.map((c) => c.toUpperCase()).join("") +
   "]+";
 
-function inputStringToColors(input) {
+export function inputStringToColors(input) {
   return input.split("").map((letter) => {
     const flag = validFlags.find((flag) => flag.name.includes(letter));
     return {
@@ -94,69 +92,26 @@ function inputStringToColors(input) {
   });
 }
 
-const FLAG_WIDTH = 1500;
-const NORMAL_FLAG_HEIGHT = 1000;
+export const FLAG_WIDTH = 1500;
+export const NORMAL_FLAG_HEIGHT = 1000;
 
-function drawFlag(canvas, ctx, colors) {
-  canvas.width = FLAG_WIDTH;
-
-  // calculates the total flag height
-  var totalHeight = 0;
-  for (var i = 0; i < colors.length; i++) {
-    totalHeight += colors[i].stripeWidth * NORMAL_FLAG_HEIGHT - 1;
-    // 1 is subtracted so they line up nicely
-  }
-  canvas.height = totalHeight;
-
+export function calculateRectsAndHeight(colors) {
   var currentPosition = 0;
 
-  for (var i = 0; i < colors.length; i++) {
-    const stripeWidth = colors[i].stripeWidth * NORMAL_FLAG_HEIGHT;
+  const rects = colors.map((color) => {
+    const stripeHeight = color.stripeWidth * NORMAL_FLAG_HEIGHT;
+    const result = {
+      x: 0,
+      y: currentPosition,
+      width: FLAG_WIDTH,
+      height: stripeHeight,
+      color: color.color,
+    };
 
-    ctx.fillStyle = colors[i].color;
-    ctx.fillRect(0, currentPosition, FLAG_WIDTH, stripeWidth);
+    currentPosition += stripeHeight - 1;
 
-    currentPosition += stripeWidth - 1;
-  }
+    return result;
+  });
+
+  return { rects: rects, height: currentPosition };
 }
-
-window.onload = function () {
-  document.getElementById("allowed-letters").innerHTML += uniqueLetters.join(
-    ", "
-  );
-
-  const startingURL = new URL(window.location.href);
-  const searchParams = new URLSearchParams(startingURL.searchParams);
-
-  if (searchParams.get("input") === null) {
-    searchParams.set("input", "lesbian");
-  }
-
-  const input = document.getElementById("desired-words");
-  input.pattern = validationRegex;
-  input.value = searchParams.get("input");
-
-  input.oninput = function () {
-    if (!input.checkValidity()) {
-      return;
-    }
-
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawFlag(canvas, ctx, inputStringToColors(input.value.toLowerCase()));
-  };
-
-  input.onchange = function () {
-    searchParams.set("input", input.value);
-
-    window.history.replaceState(
-      {},
-      "",
-      window.location.pathname + "?" + searchParams.toString()
-    );
-  };
-
-  input.oninput();
-};
