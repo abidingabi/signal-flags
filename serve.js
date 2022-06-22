@@ -20,16 +20,18 @@ function rectsWithHeightToMagickCommand(rectsWithHeight) {
   return command;
 }
 
-async function magickCommandToBase64(command, callback) {
+async function magickCommandToWebpBuffer(command, callback) {
   if (command == null) {
     callback(null);
     return;
   }
 
   exec(command, { encoding: "buffer" }, (error, stdout, stderr) => {
-    callback("data:image/webp;base64," + stdout.toString("base64"));
+    callback(stdout);
   });
 }
+
+const validationRegex = new RegExp(lib.validationRegex);
 
 const requestListener = function (req, res) {
   const parsedURL = url.parse(req.url, true);
@@ -37,32 +39,39 @@ const requestListener = function (req, res) {
   if (parsedURL.pathname === "/") {
     const input = parsedURL.query["input"];
 
-    let magickCommand = null;
-
-    if (input != undefined) {
-      magickCommand = rectsWithHeightToMagickCommand(
-        lib.calculateRectsAndHeight(lib.inputStringToColors(input))
+    fs.readFile("./static/index.html", (error, pgResp) => {
+      let modifiedHTML = pgResp.toString();
+      modifiedHTML = modifiedHTML.replace(
+        "<!--replaceme-->",
+        input == undefined
+          ? "<!--no input in query parameters so no ogp image-->"
+          : `<meta property="og:image" content="generate/${input}.webp" />`
       );
+
+      res.writeHead(200, { "Content-Type": "text/html" });
+      res.write(modifiedHTML);
+      res.end();
+    });
+  } else if (/\/generate\/\w+\.webp/.test(parsedURL.pathname)) {
+    const input = parsedURL.pathname.split("/")[2].split(".")[0];
+
+    if (!validationRegex.test(input)) {
+      res.writeHead(406, { "Content-Type": "text/text" });
+      res.end("Invalid characters used!");
+      return;
     }
 
-    magickCommandToBase64(magickCommand, (base64) => {
-      fs.readFile("./static/index.html", (error, pgResp) => {
-        let modifiedHTML = pgResp.toString();
-        if (base64 != null) {
-          modifiedHTML = modifiedHTML.replace(
-            "<!--replaceme-->",
-            `<meta property="og:image" content="${base64}" />`
-          );
-        }
+    const magickCommand = rectsWithHeightToMagickCommand(
+      lib.calculateRectsAndHeight(lib.inputStringToColors(input))
+    );
 
-        res.writeHead(200, { "Content-Type": "text/html" });
-        res.write(modifiedHTML);
-        res.end();
-      });
+    magickCommandToWebpBuffer(magickCommand, (buffer) => {
+      res.writeHead(200, { "Content-Type": "image/webp" });
+      res.write(buffer);
+      res.end();
     });
   } else {
     const endpoints = {
-      "/index.html": "text/html", // TODO: delete me!
       "/style.css": "text/css",
       "/main.js": "text/javascript",
       "/lib.js": "text/javascript",
@@ -76,6 +85,9 @@ const requestListener = function (req, res) {
 
         res.end();
       });
+    } else {
+      res.writeHead(404);
+      res.end("Content not found");
     }
   }
 };
