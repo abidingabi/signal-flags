@@ -53,7 +53,12 @@ const validFlags = [
     stripeWidth: 1 / 7,
   },
   {
-    name: "v", // v, vincian, not doing c because it's another white
+    name: "cupio", // c
+    colors: ["#FCA9A3", "#FDC5C0", "#FFFFFF", "#C8BFE6", "#A0A0A0"],
+    stripeWidth: 1 / 5,
+  },
+  {
+    name: "vincian", // v
     colors: [
       "#078D70",
       "#26CEAA",
