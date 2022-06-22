@@ -120,7 +120,9 @@ window.onload = function() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawFlag(canvas, ctx, inputStringToColors(input.value.toLowerCase()));
+  };
 
+  input.onchange = function() {
     searchParams.set("input", input.value)
 
     window.history.replaceState({}, "", window.location.pathname + "?" + searchParams.toString());
