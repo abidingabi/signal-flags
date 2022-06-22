@@ -1,0 +1,27 @@
+input, canvas {
+    width: 40em;
+    max-width: 90%;
+    margin: auto;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    text-align: center;
+
+    /* necessary so flags show up properly */
+    background-color: #F0F0F0;
+}
+
+input {
+    border-width: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+input:valid {
+    border-color: green;
+}
+
+input:invalid {
+    border-color: red;
+}
