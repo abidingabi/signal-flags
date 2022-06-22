@@ -89,12 +89,14 @@ window.onload = function() {
   const startingURL = new URL(window.location.href);
   const searchParams = new URLSearchParams(startingURL.searchParams);
 
+  if (searchParams.get("input") === null) {
+    searchParams.set("input", "lesbian");
+  }
+
   const input = document.getElementById("desired-words");
   input.pattern = validationRegex;
+  input.value = searchParams.get("input");
 
-  const storedInput = searchParams.get("input");
-  input.value = storedInput === "" ? "lesbian" : storedInput;
-  
   input.oninput = function() {
     if (!input.checkValidity()) {
       return;
