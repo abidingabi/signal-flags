@@ -62,7 +62,7 @@ const requestListener = function (req, res) {
     }
 
     const magickCommand = rectsWithHeightToMagickCommand(
-      lib.calculateRectsAndHeight(lib.inputStringToColors(input))
+      lib.calculateRectsAndHeight(lib.inputStringToColors(input.toLowerCase()))
     );
 
     magickCommandToWebpBuffer(magickCommand, (buffer) => {
