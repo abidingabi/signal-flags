@@ -83,14 +83,18 @@ function drawFlag(canvas, ctx, colors) {
   }
 }
 
-
 window.onload = function() {
   document.getElementById("allowed-letters").innerHTML += uniqueLetters.join(", ");
 
+  const startingURL = new URL(window.location.href);
+  const searchParams = new URLSearchParams(startingURL.searchParams);
+
   const input = document.getElementById("desired-words");
   input.pattern = validationRegex;
-  input.value = "lesbian";
 
+  const storedInput = searchParams.get("input");
+  input.value = storedInput === "" ? "lesbian" : storedInput;
+  
   input.oninput = function() {
     if (!input.checkValidity()) {
       return;
@@ -101,6 +105,10 @@ window.onload = function() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawFlag(canvas, ctx, inputStringToColors(input.value));
+    
+    searchParams.set("input", input.value)
+
+    window.history.replaceState({}, "", window.location.pathname + "?" + searchParams.toString());
   };
 
   input.oninput();
