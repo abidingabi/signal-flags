@@ -54,7 +54,10 @@ const uniqueLetters = validFlags
   )
   .sort();
 
-const validationRegex = "[" + uniqueLetters.join("") + "]+";
+const validationRegex = "["
+      + uniqueLetters.join("")
+      + uniqueLetters.map((c) => c.toUpperCase()).join("")
+      + "]+";
 
 function inputStringToColors(input) {
   return input.split("")
@@ -116,8 +119,8 @@ window.onload = function() {
     const ctx = canvas.getContext('2d');
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawFlag(canvas, ctx, inputStringToColors(input.value));
-    
+    drawFlag(canvas, ctx, inputStringToColors(input.value.toLowerCase()));
+
     searchParams.set("input", input.value)
 
     window.history.replaceState({}, "", window.location.pathname + "?" + searchParams.toString());
