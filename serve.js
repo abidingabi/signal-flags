@@ -31,7 +31,7 @@ async function magickCommandToWebpBuffer(command, callback) {
   });
 }
 
-const validationRegex = new RegExp(lib.validationRegex);
+const validationRegex = new RegExp(`^${lib.validationRegex}$`);
 
 const requestListener = function (req, res) {
   const parsedURL = url.parse(req.url, true);
