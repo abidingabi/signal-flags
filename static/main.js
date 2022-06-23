@@ -1,7 +1,10 @@
 import * as lib from "/lib.js";
 
+const FLAG_WIDTH = 1500;
+const NORMAL_FLAG_HEIGHT = 1000;
+
 function drawFlag(canvas, ctx, rectsAndHeight) {
-  canvas.width = lib.FLAG_WIDTH;
+  canvas.width = FLAG_WIDTH;
   canvas.height = rectsAndHeight.height;
 
   const rects = rectsAndHeight.rects;
@@ -42,7 +45,9 @@ window.onload = function () {
       canvas,
       ctx,
       lib.calculateRectsAndHeight(
-        lib.inputStringToColors(input.value.toLowerCase())
+        lib.inputStringToColors(input.value.toLowerCase()),
+        FLAG_WIDTH,
+        NORMAL_FLAG_HEIGHT
       )
     );
   };

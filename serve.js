@@ -4,9 +4,13 @@ import fs from "fs";
 import { exec } from "child_process";
 import url from "url";
 
+// imagemagick is expensive lol
+const FLAG_WIDTH = 450;
+const NORMAL_FLAG_HEIGHT = 300;
+
 function rectsWithHeightToMagickCommand(rectsWithHeight) {
   const command =
-    `magick -size ${lib.FLAG_WIDTH}x${rectsWithHeight.height} canvas:transparent ` +
+    `magick -size ${FLAG_WIDTH}x${rectsWithHeight.height} canvas:transparent ` +
     rectsWithHeight.rects
       .map(
         (rect) =>
@@ -68,7 +72,11 @@ const requestListener = function (req, res) {
     }
 
     const magickCommand = rectsWithHeightToMagickCommand(
-      lib.calculateRectsAndHeight(lib.inputStringToColors(input.toLowerCase()))
+      lib.calculateRectsAndHeight(
+        lib.inputStringToColors(input.toLowerCase()),
+        FLAG_WIDTH,
+        NORMAL_FLAG_HEIGHT
+      )
     );
 
     magickCommandToWebpBuffer(magickCommand, (buffer) => {

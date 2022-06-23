@@ -97,18 +97,15 @@ export function inputStringToColors(input) {
   });
 }
 
-export const FLAG_WIDTH = 1500;
-export const NORMAL_FLAG_HEIGHT = 1000;
-
-export function calculateRectsAndHeight(colors) {
+export function calculateRectsAndHeight(colors, flagWidth, normalFlagHeight) {
   var currentPosition = 0;
 
   const rects = colors.map((color) => {
-    const stripeHeight = color.stripeWidth * NORMAL_FLAG_HEIGHT;
+    const stripeHeight = color.stripeWidth * normalFlagHeight;
     const result = {
       x: 0,
       y: currentPosition,
-      width: FLAG_WIDTH,
+      width: flagWidth,
       height: stripeHeight,
       color: color.color,
     };
