@@ -45,7 +45,7 @@ const requestListener = function (req, res) {
         "<!--replaceme-->",
         input == undefined
           ? "<!--no input in query parameters so no ogp image-->"
-          : `<meta property="og:image" content="generate/${input}.webp" />`
+          : `<meta property="og:image" content="/generate/${input}.webp" />`
       );
 
       res.writeHead(200, { "Content-Type": "text/html" });
