@@ -18,8 +18,9 @@ function drawFlag(canvas, ctx, rectsAndHeight) {
 }
 
 window.onload = function () {
-  document.getElementById("allowed-letters").innerHTML +=
-    lib.uniqueLetters.join(", ");
+  document.getElementById(
+    "allowed-letters"
+  ).innerHTML += lib.uniqueLetters.join(", ");
 
   const startingURL = new URL(window.location.href);
   const searchParams = new URLSearchParams(startingURL.searchParams);
