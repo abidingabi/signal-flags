@@ -8,26 +8,30 @@
 
   outputs = { self, nixpkgs, utils }:
     utils.lib.eachDefaultSystem (system:
-      let pkgs = import nixpkgs { inherit system; };
+      let
+        pkgs = import nixpkgs { inherit system; };
+        version = builtins.substring 0 8 self.lastModifiedDate;
       in {
-        defaultApp = with pkgs;
-          writeShellApplication {
-            name = "signal-flags";
-
-            runtimeInputs = [ imagemagick nodejs ];
-
-            text = "node serve.js";
+        packages = {
+          default = pkgs.buildGoModule {
+            pname = "signal-flags";
+            inherit version;
+            src = ./.;
+            vendorSha256 =
+              "sha256-pQpattmS9VmO3ZIQUFn66az8GSmB4IvYhTTCFn6SUmo=";
           };
+        };
 
-        devShell = with pkgs;
-          mkShell {
-            buildInputs = [
-              imagemagick
-              nodejs
+        apps.default =
+          utils.lib.mkApp { drv = self.packages.${system}.default; };
 
-              # autoformatters
-              nodePackages.prettier
-            ];
-          };
+        devShells.default = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            go
+
+            # autoformatters
+            nodePackages.prettier
+          ];
+        };
       });
 }
