@@ -8,10 +8,11 @@ import (
 	"image/png"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 const BASE_FLAG_WIDTH = 1500
@@ -91,15 +92,7 @@ func CreateFlag(stripes []Stripe) *image.RGBA {
 }
 
 func Generate(w http.ResponseWriter, r *http.Request) {
-	var queryParams = r.URL.Query()["input"]
-
-	if len(queryParams) == 0 || len(queryParams[0]) == 0 {
-		w.Header().Add("Content-Type", "text/plain")
-		io.WriteString(w, "Empty input string is invalid")
-		return
-	}
-
-	input := queryParams[0]
+	input := chi.URLParam(r, "input")
 
 	stripes := make([]Stripe, len(input))
 
@@ -147,10 +140,12 @@ func ServeFile(mime string, path string) func(w http.ResponseWriter, r *http.Req
 }
 
 func main() {
-	http.HandleFunc("/generate.png", Generate)
-	http.HandleFunc("/style.css", ServeFile("text/css", "static/style.css"))
-	http.HandleFunc("/main.js", ServeFile("text/javascript", "static/main.js"))
-	http.HandleFunc("/", ServeFileTransform(
+	r := chi.NewRouter()
+
+	r.HandleFunc("/generate/{input}.png", Generate)
+	r.HandleFunc("/style.css", ServeFile("text/css", "static/style.css"))
+	r.HandleFunc("/main.js", ServeFile("text/javascript", "static/main.js"))
+	r.HandleFunc("/", ServeFileTransform(
 		"text/html",
 		"static/index.html",
 		func(input []byte, urlQuery url.Values) []byte {
@@ -161,14 +156,12 @@ func main() {
 
 			return bytes.Replace(
 				input,
-				[]byte("/generate.png"),
-				[]byte("/generate.png?="+queryParams[0]),
+				[]byte("replaceme"),
+				[]byte(queryParams[0]+".png"),
 				1,
 			)
 		},
 	))
 
-	if err := http.ListenAndServe(":3000", nil); err != nil {
-		log.Fatal(err)
-	}
+	http.ListenAndServe(":3000", r)
 }
