@@ -1,7 +1,0 @@
-{
-  "name": "signal-flags",
-  "description": "Generates flags using stripes from existing pride flags",
-  "author": "Abigail <abigail@dogbuilt.net>",
-  "license": "MIT",
-  "type": "module"
-}
