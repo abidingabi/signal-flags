@@ -10,9 +10,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
-
-	"github.com/go-chi/chi/v5"
+	"strings"
 )
 
 const BASE_FLAG_WIDTH = 1500
@@ -92,7 +92,8 @@ func CreateFlag(stripes []Stripe) *image.RGBA {
 }
 
 func Generate(w http.ResponseWriter, r *http.Request) {
-	input := chi.URLParam(r, "input")
+	path := r.URL.Path
+	input := strings.ToLower(path[10 : len(path)-4])
 
 	stripes := make([]Stripe, len(input))
 
@@ -139,13 +140,20 @@ func ServeFile(mime string, path string) func(w http.ResponseWriter, r *http.Req
 	)
 }
 
-func main() {
-	r := chi.NewRouter()
+type Route struct {
+	regexp  *regexp.Regexp
+	handler http.HandlerFunc
+}
 
-	r.HandleFunc("/generate/{input}.png", Generate)
-	r.HandleFunc("/style.css", ServeFile("text/css", "static/style.css"))
-	r.HandleFunc("/main.js", ServeFile("text/javascript", "static/main.js"))
-	r.HandleFunc("/", ServeFileTransform(
+func makeRoute(pattern string, handler http.HandlerFunc) Route {
+	return Route{regexp.MustCompile("^" + pattern + "$"), handler}
+}
+
+var routes = []Route{
+	makeRoute("/generate/\\w+.png", Generate),
+	makeRoute("/style.css", ServeFile("text/css", "static/style.css")),
+	makeRoute("/main.js", ServeFile("text/javascript", "static/main.js")),
+	makeRoute("/", ServeFileTransform(
 		"text/html",
 		"static/index.html",
 		func(input []byte, urlQuery url.Values) []byte {
@@ -161,7 +169,25 @@ func main() {
 				1,
 			)
 		},
-	))
+	)),
+}
 
-	http.ListenAndServe(":3000", r)
+type CustomHandler struct{}
+
+func (h CustomHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	for _, route := range routes {
+		matches := route.regexp.MatchString(r.URL.Path)
+
+		if matches {
+			route.handler(w, r)
+			return
+		}
+	}
+
+	w.Header().Add("Content-Type", "text/plain")
+	http.Error(w, "Invalid path!", 404)
+}
+
+func main() {
+	http.ListenAndServe(":3000", new(CustomHandler))
 }
