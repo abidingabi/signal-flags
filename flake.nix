@@ -19,6 +19,8 @@
             src = ./.;
             vendorSha256 =
               "sha256-pQpattmS9VmO3ZIQUFn66az8GSmB4IvYhTTCFn6SUmo=";
+
+            postInstall = "cp -r static $out";
           };
         };
 
@@ -32,6 +34,29 @@
             # autoformatters
             nodePackages.prettier
           ];
+        };
+
+        nixosModules.signal-flags = { config, lib, ... }: {
+          config = {
+            users.groups.signal-flags = { };
+
+            users.users.signal-flags = {
+              isSystemUser = true;
+              group = "signal-flags";
+            };
+
+            systemd.services.signal-flags = {
+              wantedBy = [ "multi-user.target" ];
+              serviceConfig = {
+                User = "signal-flags";
+                Group = "signal-flags";
+                Restart = "always";
+                WorkingDirectory = "${self.packages."${system}".default}";
+                ExecStart =
+                  "${self.packages."${system}".default}/bin/signal-flags";
+              };
+            };
+          };
         };
       });
 }
