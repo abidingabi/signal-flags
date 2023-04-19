@@ -2,14 +2,16 @@ package main
 
 import (
 	"bytes"
+	"embed"
+	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
 	"image/png"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -113,12 +115,15 @@ func Generate(w http.ResponseWriter, r *http.Request) {
 	png.Encode(w, CreateFlag(stripes))
 }
 
+//go:embed static
+var staticContent embed.FS
+
 func ServeFileTransform(
 	mime string,
 	path string,
 	transform func(input []byte, urlQuery url.Values) []byte,
 ) func(w http.ResponseWriter, r *http.Request) {
-	b, err := ioutil.ReadFile(path)
+	b, err := staticContent.ReadFile(path)
 
 	if err != nil {
 		panic(err)
@@ -189,5 +194,11 @@ func (h CustomHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.ListenAndServe(":3000", new(CustomHandler))
+	if len(os.Args) != 2 {
+		fmt.Println("The port to bind to must be specified as the only parameter.")
+		return
+	}
+
+	err := http.ListenAndServe(":"+os.Args[1], new(CustomHandler))
+	fmt.Println(err)
 }
