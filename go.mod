@@ -1,3 +1,3 @@
 module git.dogbuilt.net/abi/signal-flags
 
-go 1.17
+go 1.18

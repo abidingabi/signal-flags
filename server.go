@@ -1,16 +1,15 @@
 package main
 
 import (
-	"bytes"
 	"embed"
 	"fmt"
+	"html/template"
 	"image"
 	"image/color"
 	"image/draw"
 	"image/png"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -118,11 +117,24 @@ func Generate(w http.ResponseWriter, r *http.Request) {
 //go:embed static
 var staticContent embed.FS
 
-func ServeFileTransform(
+func ServeTemplate(
 	mime string,
 	path string,
-	transform func(input []byte, urlQuery url.Values) []byte,
+	dataProvider func(r *http.Request) any,
 ) func(w http.ResponseWriter, r *http.Request) {
+	template, err := template.ParseFS(staticContent, path)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", mime)
+		template.Execute(w, dataProvider(r))
+	}
+}
+
+func ServeFile(mime string, path string) func(w http.ResponseWriter, r *http.Request) {
 	b, err := staticContent.ReadFile(path)
 
 	if err != nil {
@@ -131,18 +143,8 @@ func ServeFileTransform(
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", mime)
-		w.Write(transform(b, r.URL.Query()))
+		w.Write(b)
 	}
-}
-
-func ServeFile(mime string, path string) func(w http.ResponseWriter, r *http.Request) {
-	return ServeFileTransform(
-		mime,
-		path,
-		func(input []byte, urlQuery url.Values) []byte {
-			return input
-		},
-	)
 }
 
 type Route struct {
@@ -158,21 +160,24 @@ var routes = []Route{
 	makeRoute("/generate/\\w+.png", Generate),
 	makeRoute("/style.css", ServeFile("text/css", "static/style.css")),
 	makeRoute("/main.js", ServeFile("text/javascript", "static/main.js")),
-	makeRoute("/", ServeFileTransform(
+	makeRoute("/", ServeTemplate(
 		"text/html",
 		"static/index.html",
-		func(input []byte, urlQuery url.Values) []byte {
-			var queryParams = urlQuery["input"]
-			if len(queryParams) == 0 || len(queryParams[0]) == 0 {
-				return input
+		func(r *http.Request) any {
+			type Data struct {
+				OGPImageURL string
 			}
 
-			return bytes.Replace(
-				input,
-				[]byte("replaceme"),
-				[]byte(queryParams[0]+".png"),
-				1,
-			)
+			var queryParams = r.URL.Query()["input"]
+			if len(queryParams) == 0 || len(queryParams[0]) == 0 {
+				return Data{
+					OGPImageURL: "",
+				}
+			}
+
+			return Data{
+				OGPImageURL: "/generate/" + queryParams[0] + ".png",
+			}
 		},
 	)),
 }
