@@ -176,7 +176,7 @@ var routes = []Route{
 			}
 
 			return Data{
-				OGPImageURL: "/generate/" + queryParams[0] + ".png",
+				OGPImageURL: os.Args[2] + "generate/" + queryParams[0] + ".png",
 			}
 		},
 	)),
@@ -199,8 +199,8 @@ func (h CustomHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Println("The port to bind to must be specified as the only parameter.")
+	if len(os.Args) != 3 {
+		fmt.Println("The port to bind and public url must be specified as the only two parameters.")
 		return
 	}
 

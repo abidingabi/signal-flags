@@ -54,12 +54,19 @@
         let cfg = config.dogbuilt.services.signal-flags;
         in {
           options.dogbuilt.services.signal-flags = {
-            enable = lib.mkEnableOption "Enables the signal-flag HTTP service";
+            enable = lib.mkEnableOption "Enables the signal-flags HTTP service";
 
             port = lib.mkOption rec {
               type = lib.types.port;
               example = 3000;
               description = lib.mdDoc "The port on which to listen.";
+            };
+
+            url = lib.mkOption rec {
+              type = lib.types.str;
+              example = "https://example.com";
+              description = lib.mdDoc
+                "The public url from which signal-flags will be served";
             };
           };
 
@@ -69,7 +76,8 @@
               serviceConfig = let pkg = self.packages.${pkgs.system}.default;
               in {
                 Restart = "on-failure";
-                ExecStart = "${pkg}/bin/signal-flags ${toString cfg.port}";
+                ExecStart =
+                  "${pkg}/bin/signal-flags ${toString cfg.port} ${cfg.url}";
                 DynamicUser = "yes";
               };
             };
