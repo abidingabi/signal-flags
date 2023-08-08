@@ -37,7 +37,7 @@ const validFlags = [
     stripeWidth: 1 / 5,
   },
   {
-    name: "tra", // tr, trans, only using t/r/a because of repeated color usage
+    name: "trans", // tr, trans, only using t/r/a because of repeated color usage
     colors: ["#5BCFFB", "#F5ABB9", "#FFFFFF", "#F5ABB9", "#5BCFFB"],
     stripeWidth: 1 / 5,
   },
@@ -125,15 +125,40 @@ function drawFlag(canvas, ctx, colors) {
   }
 }
 
+function sourceFlagDisplayHtml() {
+  let unusedLetters = [...uniqueLetters];
+  let output = "";
+
+  for (const flag of validFlags) {
+    for (var i = 0; i < flag.colors.length; i++) {
+      const color = flag.colors[i];
+      const char = flag.name[i];
+
+      if (unusedLetters.includes(char)) {
+        output += "<strong><em>";
+      }
+      output += `<span style="color: ${chooseBlackOrWhite(
+        color
+      )}; background-color: ${color};">${char}</span>`;
+      if (unusedLetters.includes(char)) {
+        output += "</em></strong>";
+        unusedLetters = unusedLetters.filter((c) => c != char);
+      }
+    }
+    output += "<br>\n";
+  }
+
+  return output;
+}
+
 window.onload = function () {
-  document.getElementById("allowed-letters").innerHTML +=
-    uniqueLetters.join(", ");
+  document.getElementById("source-flags").innerHTML = sourceFlagDisplayHtml();
 
   const startingURL = new URL(window.location.href);
   const searchParams = new URLSearchParams(startingURL.searchParams);
 
   if (searchParams.get("input") === null) {
-    searchParams.set("input", "lesbian");
+    searchParams.set("input", "trbian");
   }
 
   const input = document.getElementById("desired-words");
@@ -164,3 +189,28 @@ window.onload = function () {
 
   input.oninput();
 };
+
+// https://stackoverflow.com/a/35970186
+function chooseBlackOrWhite(hex) {
+  if (hex.indexOf("#") === 0) {
+    hex = hex.slice(1);
+  }
+  // convert 3-digit hex to 6-digits.
+  if (hex.length === 3) {
+    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+  }
+  if (hex.length !== 6) {
+    throw new Error("Invalid HEX color.");
+  }
+  var r = parseInt(hex.slice(0, 2), 16),
+    g = parseInt(hex.slice(2, 4), 16),
+    b = parseInt(hex.slice(4, 6), 16);
+  // https://stackoverflow.com/a/3943023/112731
+  return r * 0.299 + g * 0.587 + b * 0.114 > 186 ? "#000000" : "#FFFFFF";
+}
+
+function padZero(str, len) {
+  len = len || 2;
+  var zeros = new Array(len).join("0");
+  return (zeros + str).slice(-len);
+}
