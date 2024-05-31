@@ -22,7 +22,7 @@
             pname = "signal-flags";
             inherit version;
             src = ./.;
-            vendorSha256 = null;
+            vendorHash = null;
           };
 
         in {
