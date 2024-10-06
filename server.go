@@ -39,6 +39,7 @@ var STRIPE_TO_LETTER = map[rune]Stripe{
 	'o': Stripe{hexCodeToColor("#C4C4C4"), 5},
 	'c': Stripe{hexCodeToColor("#FCA9A3"), 5},
 	'v': Stripe{hexCodeToColor("#078D70"), 5},
+	'g': Stripe{hexCodeToColor("#BCC4C7"), 5},
 }
 
 // assumes "#000000" format, will break otherwise

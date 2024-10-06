@@ -72,6 +72,19 @@ const validFlags = [
     ],
     stripeWidth: 1 / 7,
   },
+  {
+    name: "agender", // g
+    colors: [
+      "#000000",
+      "#BCC4C7",
+      "#FFFFFF",
+      "#B7F684",
+      "#FFFFFF",
+      "#BCC4C7",
+      "#000000",
+    ],
+    stripeWidth: 1 / 7,
+  },
 ];
 
 const uniqueLetters = validFlags
