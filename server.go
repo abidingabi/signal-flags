@@ -158,7 +158,7 @@ func makeRoute(pattern string, handler http.HandlerFunc) Route {
 }
 
 var routes = []Route{
-	makeRoute("/generate/\\w+.png", Generate),
+	makeRoute("/generate/\\w+\\.png", Generate),
 	makeRoute("/style.css", ServeFile("text/css", "static/style.css")),
 	makeRoute("/main.js", ServeFile("text/javascript", "static/main.js")),
 	makeRoute("/", ServeTemplate(
